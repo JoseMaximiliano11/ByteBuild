@@ -10,13 +10,10 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <div style={{
-      display: 'flex', width: '100%', height: '100vh',
-      fontFamily: "'Poppins', sans-serif", overflow: 'hidden',
-    }}>
+    <div className="auth-root" style={{ fontFamily: "'Poppins', sans-serif" }}>
 
       {/* ── LEFT: foto Cochabamba ── */}
-      <div style={{ flex: '0 0 68%', position: 'relative', overflow: 'hidden' }}>
+      <div className="auth-left">
         <Image
           src="/imagenes/cachabamba.png"
           alt="Vista aérea de Cochabamba"
@@ -24,7 +21,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           style={{ objectFit: 'cover', objectPosition: 'center' }}
           priority
         />
-        <div style={{ position: 'absolute', top: 24, right: 24, zIndex: 2, pointerEvents: 'none' }}>
+        <div className="auth-logo">
           <Image
             src="/imagenes/logo-recipoint.png"
             alt="ReciPoint"
@@ -37,25 +34,10 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       </div>
 
       {/* ── RIGHT: panel auth ── */}
-      <div style={{
-        flex: '0 0 32%',
-        background: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
-        overflowY: 'auto',
-      }}>
-
-        {/* Tabs */}
-        <Tabs />
-
-        {/* Formulario (login o register) */}
-        <div style={{ padding: '0 28px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <div className="auth-right">
+        <div className="auth-content">
           {children}
         </div>
-
-        {/* Branding inferior */}
-        <BottomBrand />
       </div>
 
     </div>
@@ -67,6 +49,76 @@ function Tabs() {
   // Detectamos la ruta activa en el componente padre (login/register),
   // por eso exportamos también TabsLogin y TabsRegister desde cada page.
   return null; // los tabs se renderizan dentro de cada page.tsx
+}
+
+/* ── Header para login/register */
+export function AuthHeader() {
+  return (
+    <header className="auth-header">
+      <div className="auth-brand">
+        <span>Reci</span>
+        <span>Point</span>
+      </div>
+
+      <nav>
+        <a href="#">Mapa</a>
+        <a href="#">Blogs</a>
+        <a href="#">Estadísticas</a>
+        <a href="#">Sobre nosotros</a>
+      </nav>
+
+      <div className="auth-meta">
+        <span>100 pts</span>
+        <span>Juanita</span>
+      </div>
+    </header>
+  );
+}
+
+/* ── Footer para login/register */
+export function AuthFooter() {
+  return (
+    <footer className="auth-footer">
+      <div className="auth-footer-grid">
+        <div className="auth-footer-column">
+          <h3>ReciPoint</h3>
+          <p style={{ color: '#475569', fontSize: '0.88rem', lineHeight: 1.6 }}>
+            Una plataforma de reciclaje comunitario con datos claros y diseño accesible.
+          </p>
+          <div className="auth-footer-social">
+            <a href="#" aria-label="Figma">F</a>
+            <a href="#" aria-label="X">X</a>
+            <a href="#" aria-label="Instagram">I</a>
+            <a href="#" aria-label="YouTube">Y</a>
+          </div>
+        </div>
+
+        <div className="auth-footer-column">
+          <h3>Use cases</h3>
+          <a href="#">UI design</a>
+          <a href="#">UX design</a>
+          <a href="#">Wireframing</a>
+          <a href="#">Diagramming</a>
+        </div>
+
+        <div className="auth-footer-column">
+          <h3>Explore</h3>
+          <a href="#">Design</a>
+          <a href="#">Prototyping</a>
+          <a href="#">Development</a>
+          <a href="#">Collaboration</a>
+        </div>
+
+        <div className="auth-footer-column">
+          <h3>Resources</h3>
+          <a href="#">Blog</a>
+          <a href="#">Best practices</a>
+          <a href="#">Color wheel</a>
+          <a href="#">Support</a>
+        </div>
+      </div>
+    </footer>
+  );
 }
 
 /* ── Logo Alcaldía + Cocha ── */

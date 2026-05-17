@@ -2,17 +2,11 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import LoginForm from '@/components/LoginForm';
-import { BottomBrand } from '@/components/AuthLayout';
 
 export default function LoginPage() {
   return (
-    <div style={{
-      display: 'flex', width: '100%', height: '100vh',
-      fontFamily: "'Poppins', sans-serif", overflow: 'hidden',
-    }}>
-
-      {/* ── LEFT: foto Cochabamba ── */}
-      <div style={{ flex: '0 0 68%', position: 'relative', overflow: 'hidden' }}>
+    <div className="auth-root" style={{ fontFamily: "'Poppins', sans-serif" }}>
+      <div className="auth-left">
         <Image
           src="/imagenes/cachabamba.png"
           alt="Vista aérea de Cochabamba"
@@ -20,7 +14,7 @@ export default function LoginPage() {
           style={{ objectFit: 'cover', objectPosition: 'center' }}
           priority
         />
-        <div style={{ position: 'absolute', top: 24, right: 24, zIndex: 2, pointerEvents: 'none' }}>
+        <div className="auth-logo">
           <Image
             src="/imagenes/logo-recipoint.png"
             alt="ReciPoint"
@@ -32,19 +26,12 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* ── RIGHT: panel ── */}
-      <div style={{
-        flex: '0 0 32%', background: '#fff',
-        display: 'flex', flexDirection: 'column',
-        boxShadow: '-4px 0 24px rgba(0,0,0,0.08)',
-        overflowY: 'auto',
-      }}>
-
-        {/* Tabs */}
-        <div style={{
-          display: 'flex', margin: '28px 28px 0',
+      <div className="auth-right">
+        <div className="auth-tabs" style={{
+          display: 'flex',
           background: '#F5F5F7', borderRadius: 10,
           padding: 4, gap: 4, flexShrink: 0,
+          margin: '28px 28px 0',
         }}>
           <Link href="/register" style={{
             flex: 1, padding: '9px 0', borderRadius: 7,
@@ -66,14 +53,10 @@ export default function LoginPage() {
           </span>
         </div>
 
-        {/* Formulario */}
-        <div style={{ padding: '0 28px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div className="auth-form-wrap">
           <LoginForm />
         </div>
-
-        <BottomBrand />
       </div>
-
     </div>
   );
 }

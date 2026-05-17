@@ -10,6 +10,7 @@ import { fakeContainers } from '@/data/fakeContainers';
 import MapView from '@/components/MapView';
 import PointsModal from '@/components/PointsModal';
 import RedeemModal from '@/components/RedeemModal';
+import BasureroModal from '@/components/BasureroModal';
 
 const TIPO_COLOR: Record<Container['tipo'], string> = {
   plastico: '#3b82f6',
@@ -56,6 +57,8 @@ export default function HomePage() {
   const [selected, setSelected] = useState<Container | null>(null);
   const [showRedeemModal, setShowRedeemModal] = useState(false);
   const [showPointsModal, setShowPointsModal] = useState(false);
+  const [showBasureroModal, setShowBasureroModal] = useState(false);
+  const mapInstance = useRef<any>(null);
 
   useEffect(() => {
     getCurrentUser().then(u => {
@@ -120,6 +123,22 @@ export default function HomePage() {
 
         {/* Right side */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+
+          <button
+            onClick={() => setShowBasureroModal(true)}
+            style={{
+              background: '#eef2ff',
+              color: '#4338ca',
+              border: '1px solid #c7d2fe',
+              borderRadius: 20,
+              padding: '6px 14px',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            Basurero
+          </button>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <button
@@ -377,6 +396,12 @@ export default function HomePage() {
         onCanjear={() => {
           setShowRedeemModal(false);
         }}
+      />
+
+      <BasureroModal
+        isOpen={showBasureroModal}
+        puntos={user?.puntos ?? 0}
+        onClose={() => setShowBasureroModal(false)}
       />
     </div>
   );

@@ -34,7 +34,7 @@ export default function RedeemModal({ isOpen, puntos, onClose, onCanjear }: Prop
         }}
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24, padding: 32 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 20 }}>
             <div>
               <p style={{ margin: 0, fontSize: 14, color: '#0ea5e9', textTransform: 'uppercase', letterSpacing: 1 }}>
                 17 de mayo de 2026
@@ -46,10 +46,29 @@ export default function RedeemModal({ isOpen, puntos, onClose, onCanjear }: Prop
                 Total de puntos acumulados:
               </p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 140, height: 140, borderRadius: '50%', border: '8px solid rgba(14,165,233,0.25)' }}>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ margin: 0, fontSize: 38, fontWeight: 800, color: '#0ea5e9' }}>{puntos}</p>
-                <p style={{ margin: 0, fontSize: 14, color: '#64748b' }}>Puntos</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <button
+                onClick={() => {
+                  // Acción de Basurero
+                }}
+                style={{
+                  padding: '12px 18px',
+                  borderRadius: 9999,
+                  border: '1px solid rgba(14,165,233,0.35)',
+                  background: '#ffffff',
+                  color: '#0f172a',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  fontSize: 13,
+                }}
+              >
+                Basurero
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 140, height: 140, borderRadius: '50%', border: '8px solid rgba(14,165,233,0.25)' }}>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ margin: 0, fontSize: 38, fontWeight: 800, color: '#0ea5e9' }}>{puntos}</p>
+                  <p style={{ margin: 0, fontSize: 14, color: '#64748b' }}>Puntos</p>
+                </div>
               </div>
             </div>
           </div>
