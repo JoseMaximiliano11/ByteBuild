@@ -1,7 +1,6 @@
 // src/app/admin/page.tsx
 'use client';
 
-import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import StatsChart from '@/components/StatsChart';
 import { fakeContainers } from '@/data/fakeContainers';
@@ -9,8 +8,6 @@ import { fakeStats } from '@/data/fakeStats';
 import { fakeUsers } from '@/data/fakeUsers';
 
 export default function AdminPage() {
-  const [filter, setFilter] = useState('all');
-
   const totalRecycled = fakeStats.reduce((sum, stat) => sum + stat.peso, 0);
   const totalPoints = fakeStats.reduce((sum, stat) => sum + stat.puntos, 0);
   const fullContainers = fakeContainers.filter(c => c.estado === 'lleno').length;
@@ -56,10 +53,8 @@ export default function AdminPage() {
             type="bar"
             data={[
               { label: 'Plástico', value: 150, color: '#3B82F6' },
-              { label: 'Papel', value: 120, color: '#F59E0B' },
-              { label: 'Vidrio', value: 90, color: '#10B981' },
-              { label: 'Orgánico', value: 60, color: '#F97316' },
-              { label: 'Metal', value: 40, color: '#6B7280' },
+              { label: 'Vidrio',   value: 90,  color: '#06B6D4' },
+              { label: 'Latas',    value: 110, color: '#F97316' },
             ]}
           />
 
@@ -92,13 +87,13 @@ export default function AdminPage() {
                 {fakeContainers.map(container => (
                   <tr key={container.id} className="border-b hover:bg-gray-50">
                     <td className="py-3 px-4 font-medium">{container.nombre}</td>
-                    <td className="py-3 px-4">{container.tipo}</td>
+                    <td className="py-3 px-4 text-xs text-gray-500">Plástico / Vidrio / Latas</td>
                     <td className="py-3 px-4">{container.ubicacion.direccion}</td>
                     <td className="py-3 px-4">
                       <div className="bg-gray-200 rounded-full h-2 w-24 overflow-hidden">
                         <div
                           className="bg-green-500 h-full"
-                          style={{ width: `${(container.nivelActual / container.capacidad) * 100}%` }}
+                          style={{ width: `${Math.round((container.compartimentos.plastico + container.compartimentos.vidrio + container.compartimentos.latas) / 3)}%` }}
                         />
                       </div>
                     </td>

@@ -2,6 +2,7 @@
 // Funciones de autenticación con Supabase
 
 import supabase from './supabase';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 import { User, RegisterData } from '@/types/user';
 
 interface UserProfileRow {
@@ -22,7 +23,7 @@ interface UserProfileRow {
   puntos_canjeados?: number;
 }
 
-function mapProfileToUser(profile: UserProfileRow, supabaseUser: any): User {
+function mapProfileToUser(profile: UserProfileRow, supabaseUser: SupabaseUser): User {
   return {
     uid: supabaseUser.id,
     nombre: profile.nombres || '',
@@ -48,7 +49,7 @@ function mapProfileToUser(profile: UserProfileRow, supabaseUser: any): User {
 
 async function getUserProfile(email: string): Promise<UserProfileRow | null> {
   const { data, error } = await supabase
-    .from<UserProfileRow>('usuarios')
+    .from('usuarios')
     .select('*')
     .eq('email', email)
     .single();
@@ -58,7 +59,7 @@ async function getUserProfile(email: string): Promise<UserProfileRow | null> {
     return null;
   }
 
-  return data;
+  return data as UserProfileRow | null;
 }
 
 /**
@@ -156,7 +157,7 @@ export async function logOut(): Promise<void> {
  * Escuchar cambios de autenticación
  */
 export function onAuthChange(callback: (user: User | null) => void): () => void {
-  const { data } = supabase.auth.onAuthStateChange(async (event, session) => {
+  const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
     if (session?.user) {
       const email = session.user.email || '';
       const profile = await getUserProfile(email);
