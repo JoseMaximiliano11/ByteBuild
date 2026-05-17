@@ -9,6 +9,12 @@ import { fakeContainers } from '@/data/fakeContainers';
 import { fakeStats } from '@/data/fakeStats';
 import { Container, WasteStats } from '@/types/container';
 
+const COMPARTMENT_CONFIG = [
+  { key: 'plastico' as const, label: 'Botellas de plástico', color: 'bg-blue-500' },
+  { key: 'vidrio'   as const, label: 'Vidrio',               color: 'bg-cyan-500'  },
+  { key: 'latas'    as const, label: 'Latas',                color: 'bg-orange-500' },
+];
+
 export default function ContainerDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -16,28 +22,28 @@ export default function ContainerDetailPage() {
 
   const container = useMemo<Container | null>(
     () => fakeContainers.find(c => c.id === containerId) ?? null,
-    [containerId]
+    [containerId],
   );
 
   const stats = useMemo<WasteStats[]>(
     () => (container ? fakeStats.filter(s => s.containerId === containerId) : []),
-    [container, containerId]
+    [container, containerId],
   );
 
   if (!container) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar onLogin={() => router.push('/login')} />
-        <div className="max-w-4xl mx-auto px-4 py-8">
-          <div className="text-center py-12">
-            <p className="text-gray-500">Contenedor no encontrado</p>
-          </div>
+        <div className="max-w-4xl mx-auto px-4 py-8 text-center py-12">
+          <p className="text-gray-500">Contenedor no encontrado</p>
         </div>
       </div>
     );
   }
 
-  const fillPercentage = (container.nivelActual / container.capacidad) * 100;
+  const avgNivel = Math.round(
+    (container.compartimentos.plastico + container.compartimentos.vidrio + container.compartimentos.latas) / 3,
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -59,56 +65,51 @@ export default function ContainerDetailPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Info */}
-            <div>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-semibold text-gray-600">Tipo</label>
-                  <p className="text-lg">{container.tipo.toUpperCase()}</p>
-                </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-semibold text-gray-600">Ubicación</label>
+                <p className="text-lg">{container.ubicacion.direccion}</p>
+                <p className="text-sm text-gray-500">
+                  {container.ubicacion.lat}, {container.ubicacion.lng}
+                </p>
+              </div>
 
-                <div>
-                  <label className="text-sm font-semibold text-gray-600">Ubicación</label>
-                  <p className="text-lg">{container.ubicacion.direccion}</p>
-                  <p className="text-sm text-gray-500">
-                    Coordenadas: {container.ubicacion.lat}, {container.ubicacion.lng}
-                  </p>
-                </div>
+              <div>
+                <label className="text-sm font-semibold text-gray-600">Estado</label>
+                <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold mt-2 ${
+                  container.estado === 'disponible'   ? 'bg-green-100 text-green-700'
+                  : container.estado === 'lleno'      ? 'bg-red-100 text-red-700'
+                  : 'bg-yellow-100 text-yellow-700'
+                }`}>
+                  {container.estado}
+                </span>
+              </div>
 
-                <div>
-                  <label className="text-sm font-semibold text-gray-600">Estado</label>
-                  <span
-                    className={`inline-block px-3 py-1 rounded-full text-sm font-semibold mt-2 ${
-                      container.estado === 'disponible'
-                        ? 'bg-green-100 text-green-700'
-                        : container.estado === 'lleno'
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-yellow-100 text-yellow-700'
-                    }`}
-                  >
-                    {container.estado}
-                  </span>
+              {/* Compartimentos */}
+              <div>
+                <label className="text-sm font-semibold text-gray-600 mb-3 block">
+                  Nivel por compartimento
+                </label>
+                <div className="space-y-3">
+                  {COMPARTMENT_CONFIG.map(({ key, label, color }) => {
+                    const pct = container.compartimentos[key];
+                    return (
+                      <div key={key}>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-gray-700">{label}</span>
+                          <span className="font-bold">{pct}%</span>
+                        </div>
+                        <div className="bg-gray-200 rounded-full h-3 overflow-hidden">
+                          <div
+                            className={`${color} h-full transition-all`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-
-                <div>
-                  <label className="text-sm font-semibold text-gray-600 mb-3 block">
-                    Capacidad
-                  </label>
-                  <div className="bg-gray-200 rounded-full h-4 overflow-hidden">
-                    <div
-                      className={`h-full transition-all ${
-                        fillPercentage < 50
-                          ? 'bg-green-500'
-                          : fillPercentage < 80
-                          ? 'bg-yellow-500'
-                          : 'bg-red-500'
-                      }`}
-                      style={{ width: `${fillPercentage}%` }}
-                    />
-                  </div>
-                  <p className="text-sm text-gray-600 mt-2">
-                    {container.nivelActual} / {container.capacidad} kg ({fillPercentage.toFixed(1)}%)
-                  </p>
-                </div>
+                <p className="text-sm text-gray-500 mt-3">Promedio de llenado: <strong>{avgNivel}%</strong></p>
               </div>
             </div>
 
@@ -136,15 +137,14 @@ export default function ContainerDetailPage() {
               </div>
               <div className="bg-green-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Peso Total</p>
-                <p className="text-2xl font-bold">{stats.reduce((sum, s) => sum + s.peso, 0).toFixed(1)} kg</p>
+                <p className="text-2xl font-bold">{stats.reduce((s, r) => s + r.peso, 0).toFixed(1)} kg</p>
               </div>
               <div className="bg-purple-50 p-4 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Puntos Repartidos</p>
-                <p className="text-2xl font-bold">{stats.reduce((sum, s) => sum + s.puntos, 0)}</p>
+                <p className="text-2xl font-bold">{stats.reduce((s, r) => s + r.puntos, 0)}</p>
               </div>
             </div>
 
-            {/* Recent Activity */}
             <div className="border-t pt-6">
               <h3 className="font-semibold mb-4">Actividad Reciente</h3>
               <div className="space-y-3">
@@ -152,15 +152,11 @@ export default function ContainerDetailPage() {
                   <div key={stat.id} className="flex justify-between items-center p-3 bg-gray-50 rounded">
                     <div>
                       <p className="font-medium">Usuario {stat.userId}</p>
-                      <p className="text-sm text-gray-600">
-                        {stat.peso} kg de {stat.tipo}
-                      </p>
+                      <p className="text-sm text-gray-600">{stat.peso} kg de {stat.tipo}</p>
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-green-600">+{stat.puntos} pts</p>
-                      <p className="text-xs text-gray-500">
-                        {stat.timestamp.toLocaleDateString()}
-                      </p>
+                      <p className="text-xs text-gray-500">{stat.timestamp.toLocaleDateString()}</p>
                     </div>
                   </div>
                 ))}
