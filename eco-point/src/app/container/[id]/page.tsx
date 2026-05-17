@@ -1,11 +1,9 @@
 // src/app/container/[id]/page.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import Image from 'next/image';
 import Navbar from '@/components/Navbar';
-import StatsChart from '@/components/StatsChart';
 import QRGenerator from '@/components/QRGenerator';
 import { fakeContainers } from '@/data/fakeContainers';
 import { fakeStats } from '@/data/fakeStats';
@@ -16,17 +14,15 @@ export default function ContainerDetailPage() {
   const params = useParams();
   const containerId = params.id as string;
 
-  const [container, setContainer] = useState<Container | null>(null);
-  const [stats, setStats] = useState<WasteStats[]>([]);
+  const container = useMemo<Container | null>(
+    () => fakeContainers.find(c => c.id === containerId) ?? null,
+    [containerId]
+  );
 
-  useEffect(() => {
-    const found = fakeContainers.find(c => c.id === containerId);
-    if (found) {
-      setContainer(found);
-      const containerStats = fakeStats.filter(s => s.containerId === containerId);
-      setStats(containerStats);
-    }
-  }, [containerId]);
+  const stats = useMemo<WasteStats[]>(
+    () => (container ? fakeStats.filter(s => s.containerId === containerId) : []),
+    [container, containerId]
+  );
 
   if (!container) {
     return (

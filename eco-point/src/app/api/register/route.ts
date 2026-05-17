@@ -2,6 +2,13 @@ import { NextResponse } from 'next/server';
 import supabaseAdmin from '@/lib/supabaseAdmin';
 
 export async function POST(request: Request) {
+  if (!supabaseAdmin) {
+    return NextResponse.json(
+      { error: 'Configuración del servidor incompleta.' },
+      { status: 500 }
+    );
+  }
+
   try {
     const { nombre, apellido, correo, ci, password } = await request.json();
 

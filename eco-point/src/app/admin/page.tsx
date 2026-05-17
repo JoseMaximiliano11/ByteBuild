@@ -1,7 +1,6 @@
 // src/app/admin/page.tsx
 'use client';
 
-import { useState } from 'react';
 import Navbar from '@/components/Navbar';
 import StatsChart from '@/components/StatsChart';
 import { fakeContainers } from '@/data/fakeContainers';
@@ -9,8 +8,6 @@ import { fakeStats } from '@/data/fakeStats';
 import { fakeUsers } from '@/data/fakeUsers';
 
 export default function AdminPage() {
-  const [filter, setFilter] = useState('all');
-
   const totalRecycled = fakeStats.reduce((sum, stat) => sum + stat.peso, 0);
   const totalPoints = fakeStats.reduce((sum, stat) => sum + stat.puntos, 0);
   const fullContainers = fakeContainers.filter(c => c.estado === 'lleno').length;
