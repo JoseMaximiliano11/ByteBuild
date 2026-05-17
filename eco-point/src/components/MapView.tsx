@@ -7,9 +7,11 @@ import { Container } from '@/types/container';
 type Props = {
   containers: Container[];
   onContainerSelect?: (container: Container) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onMapReady?: (mapInstance: any) => void;
 };
 
-const STATUS_COLORS: Record<Container['estado'], string> = {
+const ESTADO_COLORS: Record<Container['estado'], string> = {
   disponible: '#22c55e',
   lleno: '#ef4444',
   mantenimiento: '#f59e0b',
@@ -21,7 +23,23 @@ function circleIcon(color: string) {
   )}`;
 }
 
-export default function MapView({ containers, onContainerSelect }: Props) {
+function buildInfoContent(c: Container): string {
+  const avg = Math.round((c.compartimentos.plastico + c.compartimentos.vidrio + c.compartimentos.latas) / 3);
+  return `
+    <div style="font-family:'Poppins',sans-serif;padding:4px 2px;min-width:190px">
+      <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#6B3FA0">${c.nombre}</p>
+      <p style="margin:0 0 6px;font-size:11px;color:#888">${c.ubicacion.direccion}</p>
+      <div style="font-size:11px;display:flex;flex-direction:column;gap:3px">
+        <div style="display:flex;justify-content:space-between"><span>🔵 Plástico</span><b>${c.compartimentos.plastico}%</b></div>
+        <div style="display:flex;justify-content:space-between"><span>🟢 Vidrio</span><b>${c.compartimentos.vidrio}%</b></div>
+        <div style="display:flex;justify-content:space-between"><span>🟠 Latas</span><b>${c.compartimentos.latas}%</b></div>
+      </div>
+      <p style="margin:6px 0 0;font-size:11px;color:#888">Promedio: <b>${avg}%</b> · <span style="color:${ESTADO_COLORS[c.estado]};font-weight:700;text-transform:capitalize">${c.estado}</span></p>
+    </div>
+  `;
+}
+
+export default function MapView({ containers, onContainerSelect, onMapReady }: Props) {
   const mapRef = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
 
@@ -50,26 +68,17 @@ export default function MapView({ containers, onContainerSelect }: Props) {
           fullscreenControl: false,
         });
 
+        onMapReady?.(map);
+
         containers.forEach(container => {
           const marker = new Marker({
             position: { lat: container.ubicacion.lat, lng: container.ubicacion.lng },
             map,
             title: container.nombre,
-            icon: circleIcon(STATUS_COLORS[container.estado]),
+            icon: circleIcon(ESTADO_COLORS[container.estado]),
           });
 
-          const infoWindow = new InfoWindow({
-            content: `
-              <div style="font-family:'Poppins',sans-serif;padding:4px 2px;min-width:180px">
-                <p style="margin:0 0 3px;font-size:13px;font-weight:700;color:#6B3FA0">${container.nombre}</p>
-                <p style="margin:0 0 5px;font-size:11px;color:#888">${container.ubicacion.direccion}</p>
-                <div style="display:flex;gap:10px;font-size:11px">
-                  <span>Nivel: <b>${container.nivelActual}%</b></span>
-                  <span style="color:${STATUS_COLORS[container.estado]};font-weight:700;text-transform:capitalize">${container.estado}</span>
-                </div>
-              </div>
-            `,
-          });
+          const infoWindow = new InfoWindow({ content: buildInfoContent(container) });
 
           marker.addListener('click', () => {
             infoWindow.open({ map, anchor: marker });
