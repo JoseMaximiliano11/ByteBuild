@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Rol {
+  id_rol      Int       @id
+  nombre      String    @unique
+  descripcion String?
+  usuarios    Usuario[]
+  @@map("roles")
+}
+
+model Usuario {
+  id_usuario       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email            String?   @unique
+  nombres          String?
+  apellidos        String?
+  ci               String?   @unique
+  id_rol           Int       @default(1)
+  estado           Int       @default(1)
+  username         String?   @unique
+  url_foto_perfil  String?
+  google_id        String?   @unique
+  fecha_nac        DateTime? @db.Date
+  genero           String?
+  telefono         String?
+  puntos_totales   Int       @default(0)
+  puntos_canjeados Int       @default(0)
+  creado_en        DateTime  @default(now()) @db.Timestamptz
+  ultimo_login     DateTime? @db.Timestamptz
+  rol              Rol               @relation(fields: [id_rol], references: [id_rol])
+  sesiones         Sesion[]
+  depositos        Deposito[]
+  puntos_historial PuntosHistorial[]
+  canjes           Canje[]
+  @@map("usuarios")
+}
+
+model Sesion {
+  id_sesion   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario  String   @db.Uuid
+  token       String   @unique
+  dispositivo String?
+  ip_origen   String?
+  expira_en   DateTime @db.Timestamptz
+  activo      Boolean  @default(true)
+  creado_en   DateTime @default(now()) @db.Timestamptz
+  usuario     Usuario  @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  @@index([id_usuario, activo])
+  @@map("sesiones")
+}
+
+model TipoResiduo {
+  id_tipo           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nombre            String
+  descripcion       String?
+  puntos_por_unidad Int      @default(1)
+  icono             String?
+  activo            Boolean  @default(true)
+  creado_en         DateTime @default(now()) @db.Timestamptz
+  contenedor_residuos ContenedorResiduo[]
+  deposito_items      DepositoItem[]
+  @@map("tipos_residuo")
+}
+
+model Contenedor {
+  id_contenedor        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  codigo               String   @unique
+  nombre_ubicacion     String
+  direccion_texto      String?
+  referencia           String?
+  latitud              Decimal  @db.Decimal(10, 7)
+  longitud             Decimal  @db.Decimal(10, 7)
+  google_place_id      String?
+  google_maps_url      String?
+  nivel_llenado_pct    Int      @default(0)
+  umbral_alerta_pct    Int      @default(85)
+  alerta_activa        Boolean  @default(false)
+  activo               Boolean  @default(true)
+  ultima_actualizacion DateTime @default(now()) @db.Timestamptz
+  creado_en            DateTime @default(now()) @db.Timestamptz
+  contenedor_residuos  ContenedorResiduo[]
+  depositos            Deposito[]
+  alertas              AlertaContenedor[]
+  @@map("contenedores")
+}
+
+model ContenedorResiduo {
+  id_contenedor String     @db.Uuid
+  id_tipo       String     @db.Uuid
+  contenedor    Contenedor  @relation(fields: [id_contenedor], references: [id_contenedor], onDelete: Cascade)
+  tipo_residuo  TipoResiduo @relation(fields: [id_tipo], references: [id_tipo], onDelete: Cascade)
+  @@id([id_contenedor, id_tipo])
+  @@map("contenedor_residuos")
+}
+
+model Deposito {
+  id_deposito      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario       String    @db.Uuid
+  id_contenedor    String    @db.Uuid
+  qr_transaccion   String    @unique
+  puntos_generados Int       @default(0)
+  estado           String    @default("pendiente")
+  creado_en        DateTime  @default(now()) @db.Timestamptz
+  escaneado_en     DateTime? @db.Timestamptz
+  usuario          Usuario   @relation(fields: [id_usuario], references: [id_usuario])
+  contenedor       Contenedor @relation(fields: [id_contenedor], references: [id_contenedor])
+  items            DepositoItem[]
+  puntos_historial PuntosHistorial[]
+  @@index([id_usuario])
+  @@index([id_contenedor])
+  @@index([estado])
+  @@index([qr_transaccion])
+  @@map("depositos")
+}
+
+model DepositoItem {
+  id_item         String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_deposito     String @db.Uuid
+  id_tipo_residuo String @db.Uuid
+  cantidad        Int    @default(0)
+  puntos_subtotal Int    @default(0)
+  deposito        Deposito    @relation(fields: [id_deposito], references: [id_deposito], onDelete: Cascade)
+  tipo_residuo    TipoResiduo @relation(fields: [id_tipo_residuo], references: [id_tipo])
+  @@index([id_deposito])
+  @@map("deposito_items")
+}
+
+model PuntosHistorial {
+  id_historial String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario   String    @db.Uuid
+  id_deposito  String?   @db.Uuid
+  puntos       Int
+  tipo         String
+  descripcion  String?
+  creado_en    DateTime  @default(now()) @db.Timestamptz
+  usuario      Usuario   @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade)
+  deposito     Deposito? @relation(fields: [id_deposito], references: [id_deposito], onDelete: SetNull)
+  @@index([id_usuario])
+  @@map("puntos_historial")
+}
+
+model Canje {
+  id_canje       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_usuario     String    @db.Uuid
+  puntos_usados  Int
+  tipo_beneficio String
+  detalle        String?
+  monto_bs       Decimal?  @db.Decimal(8, 2)
+  estado         String    @default("procesando")
+  creado_en      DateTime  @default(now()) @db.Timestamptz
+  procesado_en   DateTime? @db.Timestamptz
+  usuario        Usuario   @relation(fields: [id_usuario], references: [id_usuario])
+  @@index([id_usuario])
+  @@map("canjes")
+}
+
+model AlertaContenedor {
+  id_alerta     String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  id_contenedor String    @db.Uuid
+  tipo_alerta   String
+  nivel_pct     Int?
+  mensaje       String?
+  resuelta      Boolean   @default(false)
+  creado_en     DateTime  @default(now()) @db.Timestamptz
+  resuelta_en   DateTime? @db.Timestamptz
+  contenedor    Contenedor @relation(fields: [id_contenedor], references: [id_contenedor], onDelete: Cascade)
+  @@index([id_contenedor, resuelta])
+  @@map("alertas_contenedor")
+}
